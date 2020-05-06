@@ -1,0 +1,26 @@
+body {
+  font-family: 'Courier New', Courier, monospace;
+  margin: 0 auto;
+  max-width: 30em;
+  padding: 1em;
+  margin-bottom: 1em;
+
+  /* Make it look good */
+  color: white;
+  background: skyblue;
+}
+
+h1 {
+  font-weight: bold;
+}
+
+h2 {
+  margin: 1em;
+}
+
+.context-button {
+  margin-bottom: 1em;
+}
+
+tr:nth-child(even) {background: darkblue}
+tr:nth-child(odd) {background: darkcyan}
