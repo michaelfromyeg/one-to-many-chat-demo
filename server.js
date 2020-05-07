@@ -14,15 +14,11 @@ app.use(express.urlencoded({ extended: true }));
 // Each room consits of some users, some hosts, and some viewers
 // Users can't see any messages until they choose a role, hosts see all messages, and viewers only see messages between themselves and the host
 const rooms = {
-  lecture1: { 
+  lecture1: {
     users: {},
-    hosts: {},
-    viewers: {},
   },
-  lecture2: { 
+  lecture2: {
     users: {},
-    hosts: {},
-    viewers: {},
   },
 };
 
@@ -43,10 +39,8 @@ app.post("/room", (req, res) => {
   if (rooms[req.body.room] != null) {
     return res.redirect("/");
   }
-  rooms[req.body.room] = { 
+  rooms[req.body.room] = {
     users: {},
-    hosts: {},
-    viewers: {}
   };
   res.redirect(req.body.room);
   // Send message that new room was created
@@ -57,36 +51,47 @@ io.on("connection", (socket) => {
   socket.emit("logger", "Hello, world!");
 
   socket.on("send-chat-message", (room, message) => {
-    console.log(message);
+
+    let role = rooms[room].users[socket.id].role;
 
     const context = {
       message: message,
-      name: rooms[room].users[socket.id],
+      name: rooms[room].users[socket.id].name,
     };
 
-    socket.to(room).broadcast.emit("chat-message", context);
+    if (role === "Viewer") {
+      let hostId = getHost(rooms[room]);
+      io.to(hostId).emit("chat-message", context);
+      // socket.to(room).broadcast.emit("chat-message", context);
+    } else if (role === "Host") {
+      socket.to(room).broadcast.emit("chat-message", context);
+    }
   });
 
   socket.on("disconnect", () => {
     getUserRooms(socket).forEach((room) => {
       socket
         .to(room)
-        .broadcast.emit("user-disconnected", rooms[room].users[socket.id]);
+        .broadcast.emit("user-disconnected", rooms[room].users[socket.id].name);
       delete rooms[room].users[socket.id];
     });
   });
 
   socket.on("new-user", (room, name) => {
     socket.join(room);
-    rooms[room].users[socket.id] = name;
+    let context = {
+      name: name,
+      role: "user",
+    };
+    rooms[room].users[socket.id] = context;
     socket.to(room).broadcast.emit("user-connected", name);
   });
 
   socket.on("set-role", (room, context) => {
     if (context.role === "Viewer") {
-      console.log("Add a viewer");
+      rooms[room].users[socket.id].role = context.role;
     } else if (context.role === "Host") {
-      console.log("Add a host");
+      rooms[room].users[socket.id].role = context.role;
     } else {
       throw new Error("Invalid role provided to set-role socket listener");
     }
@@ -98,4 +103,16 @@ function getUserRooms(socket) {
     if (room.users[socket.id] != null) names.push(name);
     return names;
   }, []);
+}
+
+// Will only return the first host
+function getHost(room) {
+  let users = room.users;
+  let entries = Object.entries(users);
+  for (entry in entries) {
+    if (entries[entry][1].role === "Host") {
+      return entries[entry][0];
+    }
+  }
+  throw new Error("No host in the room!");
 }

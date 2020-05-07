@@ -14,8 +14,8 @@ const buttonViewer = document.getElementById("add-viewer");
 const roomContainer = document.getElementById("room-container");
 
 if (sendContainer != null) {
-  // const name = prompt("What is your name?");
-  const name = "Testing";
+  const name = prompt("What is your name?");
+  // const name = "Testing";
   appendMessage("You joined");
   socket.emit("new-user", roomName, name);
 
@@ -30,7 +30,6 @@ if (sendContainer != null) {
 }
 
 socket.on("chat-message", (data) => {
-  console.log("data", data);
   appendMessage(`${data.name}: ${data.message}`);
 });
 
@@ -40,7 +39,6 @@ socket.on("user-connected", (name) => {
 });
 
 socket.on("user-disconnected", (name) => {
-  console.log("name", name);
   appendMessage(`${name} disconnected`);
 });
 
@@ -79,7 +77,7 @@ function setRole(role) {
     throw new Error("Invalid role provided to setRole() function");
   }
 
-  roleLabel.innerText = role;
+  roleLabel.innerText = `You are a ${role}`;
 
   let context = {
     role: role,
