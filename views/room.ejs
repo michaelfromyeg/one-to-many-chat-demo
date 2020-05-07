@@ -7,12 +7,17 @@
   <link href="/styles/main.css" rel="stylesheet" type="text/css">
   <script defer src="http://localhost:3000/socket.io/socket.io.js"></script>
   <script defer src="script.js"></script>
+
+  <script>
+    const roomName = "<%= roomName %>"
+  </script>
+
 </head>
   <body>
     <h1>liteboard.io</h1>
-    <h2 id="role"></h2>
-    <button type="button" id="add-host" class="context-button">I'm the host</button>
-    <button type="button" id="add-viewer" class="context-button">I'm a viewer</button>
+    <h2 id="role">Choose a role!</h2>
+    <button type="button" id="add-host" onClick="setRole('Host')" class="context-button">I'm the host</button>
+    <button type="button" id="add-viewer" onClick="setRole('Viewer')" class="context-button">I'm a viewer</button>
 
     <div id="message-container">
       <form id="send-container">
